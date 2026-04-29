@@ -1,0 +1,37 @@
+type Query {
+  getListUsers: [UserResponse!]!
+  getUserById(id: ID!): UserResponse
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): UserResponse!
+}
+
+type UserResponse {
+  id: ID
+  username: String
+  name: String
+  fullname: String
+  email: String
+  phone: String
+  status: UserStatus
+  createdAt: String
+  updatedAt: String
+}
+
+input CreateUserInput {
+  username: String!
+  name: String
+  fullname: String
+  email: String
+  phone: String
+  accountType: String
+  employeeNo: String
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
