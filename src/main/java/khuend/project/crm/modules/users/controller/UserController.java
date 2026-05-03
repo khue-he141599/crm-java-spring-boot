@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import khuend.project.crm.modules.users.dto.CreateUserRequest;
+import khuend.project.crm.modules.users.dto.SignInResponse;
+import khuend.project.crm.modules.users.dto.SingInRequest;
 import khuend.project.crm.modules.users.dto.UserResponse;
 import khuend.project.crm.modules.users.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +39,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return userService.create(request);
+    }
+
+    @PostMapping("/signin")
+    public SignInResponse signIn(@Valid @RequestBody SingInRequest request) {
+        return userService.signIn(request);
     }
 }

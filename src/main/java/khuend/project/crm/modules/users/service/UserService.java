@@ -3,9 +3,15 @@ package khuend.project.crm.modules.users.service;
 import java.util.List;
 import java.util.UUID;
 import khuend.project.crm.modules.users.dto.CreateUserRequest;
+import khuend.project.crm.modules.users.dto.SingInRequest;
+import khuend.project.crm.modules.users.dto.SignInResponse;
 import khuend.project.crm.modules.users.dto.UserResponse;
 
 public interface UserService {
+
+   SignInResponse signIn(SingInRequest request);
+
+   // SignUpResponse signUp(SignUpRequest request);
 
    List<UserResponse> findAll();
 
