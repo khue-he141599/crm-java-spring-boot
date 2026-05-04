@@ -8,6 +8,9 @@ import khuend.project.crm.modules.users.dto.SignInResponse;
 import khuend.project.crm.modules.users.dto.SingInRequest;
 import khuend.project.crm.modules.users.dto.UserResponse;
 import khuend.project.crm.modules.users.service.UserService;
+import khuend.project.crm.shared.security.AuthType;
+import khuend.project.crm.shared.security.Guard;
+import khuend.project.crm.shared.security.PublicEndpoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Guard(AuthType.JWT)
 public class UserController {
 
     private final UserService userService;
@@ -35,12 +39,14 @@ public class UserController {
         return userService.findById(id);
     }
 
+    @Guard(AuthType.ANY)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return userService.create(request);
     }
 
+    @PublicEndpoint
     @PostMapping("/signin")
     public SignInResponse signIn(@Valid @RequestBody SingInRequest request) {
         return userService.signIn(request);

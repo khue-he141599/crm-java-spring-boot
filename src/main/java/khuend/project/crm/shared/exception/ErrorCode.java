@@ -20,6 +20,7 @@ public enum ErrorCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "AUTH_003", "Access denied"),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_004", "Token has expired"),
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "AUTH_005", "Token is invalid"),
+    TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH_006", "Authorization token is missing"),
 
     // ----------------------------------------------------------------
     // USER

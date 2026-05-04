@@ -1,6 +1,9 @@
 package khuend.project.crm.shared.security;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -9,6 +12,8 @@ import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import khuend.project.crm.model.entity.UserEntity;
+import khuend.project.crm.shared.exception.AppException;
+import khuend.project.crm.shared.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,7 +42,7 @@ public class JwtTokenService {
             .issuer(jwtProperties.getIssuer())
             .issuedAt(Date.from(now))
             .expiration(Date.from(expiresAt))
-            .claim("type", "access")
+            .claim("type", jwtProperties.getAccessTokenType())
             .claim("username", user.getUsername())
             .signWith(secretKey)
             .compact();
@@ -53,10 +58,32 @@ public class JwtTokenService {
             .issuedAt(Date.from(now))
             .expiration(Date.from(expiresAt))
             .id(UUID.randomUUID().toString())
-            .claim("type", "refresh")
+            .claim("type", jwtProperties.getRefreshTokenType())
             .claim("username", user.getUsername())
             .signWith(secretKey)
             .compact();
+   }
+
+   public Claims verifyAccessToken(String token) {
+      try {
+         Claims claims = Jwts.parser()
+               .verifyWith(secretKey)
+               .requireIssuer(jwtProperties.getIssuer())
+               .build()
+               .parseSignedClaims(token)
+               .getPayload();
+
+         String type = claims.get("type", String.class);
+         if (!jwtProperties.getAccessTokenType().equals(type)) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+         }
+
+         return claims;
+      } catch (ExpiredJwtException ex) {
+         throw new AppException(ErrorCode.TOKEN_EXPIRED);
+      } catch (JwtException | IllegalArgumentException ex) {
+         throw new AppException(ErrorCode.TOKEN_INVALID);
+      }
    }
 
    private String toSubject(UUID userId) {
