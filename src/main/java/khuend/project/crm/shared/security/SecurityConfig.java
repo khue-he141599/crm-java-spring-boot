@@ -39,12 +39,12 @@ public class SecurityConfig {
       }
 
       @Bean
-      PasswordEncoder passwordEncoder() {
+      public PasswordEncoder passwordEncoder() {
             return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
       }
 
       @Bean
-      SecurityFilterChain springSecurityFilterChain(HttpSecurity http) throws Exception {
+      public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             return http
                         .csrf(AbstractHttpConfigurer::disable)
                         .addFilterBefore(serviceKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -59,7 +59,7 @@ public class SecurityConfig {
       }
 
       @Bean
-      JwtDecoder jwtDecoder() {
+      public JwtDecoder jwtDecoder() {
             byte[] secretBytes = jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8);
             SecretKeySpec secretKey = new SecretKeySpec(secretBytes, HMAC_ALGORITHM);
 
