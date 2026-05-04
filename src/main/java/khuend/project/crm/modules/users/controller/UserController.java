@@ -13,6 +13,8 @@ import khuend.project.crm.shared.security.Guard;
 import khuend.project.crm.shared.security.PublicEndpoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,16 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Guard(AuthType.JWT)
 public class UserController {
 
     private final UserService userService;
 
+    @Guard(AuthType.JWT)
     @GetMapping
     public List<UserResponse> getUsers() {
         return userService.findAll();
     }
 
+    @Guard(AuthType.ANY)
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable UUID id) {
         return userService.findById(id);
@@ -44,6 +47,13 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return userService.create(request);
+    }
+
+    @Guard(AuthType.JWT)
+    @GetMapping("/me")
+    public UserResponse getMe(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return userService.getMe(userId);
     }
 
     @PublicEndpoint

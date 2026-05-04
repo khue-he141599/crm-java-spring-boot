@@ -22,11 +22,15 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+      private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
       private static final String HMAC_ALGORITHM = "HmacSHA256";
 
@@ -45,6 +49,8 @@ public class SecurityConfig {
 
       @Bean
       public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            log.info("[AUTH_FLOW][BOOT-01][SECURITY_CONFIG] Configuring security filter chain issuer={} accessType={}",
+                        jwtProperties.getIssuer(), jwtProperties.getAccessTokenType());
             return http
                         .csrf(AbstractHttpConfigurer::disable)
                         .addFilterBefore(serviceKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -64,27 +70,51 @@ public class SecurityConfig {
             SecretKeySpec secretKey = new SecretKeySpec(secretBytes, HMAC_ALGORITHM);
 
             NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey).build();
+            log.info("[AUTH_FLOW][BOOT-02][JWT_DECODER] JwtDecoder initialized issuer={} accessType={}",
+                        jwtProperties.getIssuer(), jwtProperties.getAccessTokenType());
 
-            OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators
-                        .createDefaultWithIssuer(jwtProperties.getIssuer());
-            OAuth2TokenValidator<Jwt> accessTypeValidator = jwt -> {
-                  String type = jwt.getClaimAsString("type");
-                  if (jwtProperties.getAccessTokenType().equals(type)) {
-                        return OAuth2TokenValidatorResult.success();
-                  }
-                  OAuth2Error error = new OAuth2Error("invalid_token",
-                              "Token type must be " + jwtProperties.getAccessTokenType(), null);
-                  return OAuth2TokenValidatorResult.failure(error);
-            };
-
-            decoder.setJwtValidator(token -> {
-                  OAuth2TokenValidatorResult issuerResult = issuerValidator.validate(token);
-                  if (issuerResult.hasErrors()) {
-                        return issuerResult;
-                  }
-                  return accessTypeValidator.validate(token);
-            });
+            decoder.setJwtValidator(buildJwtValidator());
 
             return decoder;
+      }
+
+      private OAuth2TokenValidator<Jwt> buildJwtValidator() {
+            OAuth2TokenValidator<Jwt> issuerValidator = buildIssuerValidator();
+            OAuth2TokenValidator<Jwt> accessTypeValidator = buildAccessTypeValidator();
+
+            return token -> {
+                  OAuth2TokenValidatorResult issuerResult = issuerValidator.validate(token);
+                  if (issuerResult.hasErrors()) {
+                        log.warn("[AUTH_FLOW][REQ-02][JWT_DECODER] Issuer validation failed sub={} issuer={}",
+                                    token.getSubject(), token.getIssuer());
+                        return issuerResult;
+                  }
+
+                  log.debug("[AUTH_FLOW][REQ-02][JWT_DECODER] Issuer validation passed sub={}", token.getSubject());
+                  return accessTypeValidator.validate(token);
+            };
+      }
+
+      private OAuth2TokenValidator<Jwt> buildIssuerValidator() {
+            return JwtValidators.createDefaultWithIssuer(jwtProperties.getIssuer());
+      }
+
+      private OAuth2TokenValidator<Jwt> buildAccessTypeValidator() {
+            return jwt -> {
+                  String type = jwt.getClaimAsString("type");
+                  if (jwtProperties.getAccessTokenType().equals(type)) {
+                        log.debug("[AUTH_FLOW][REQ-03][JWT_DECODER] Access token type valid sub={} type={}",
+                                    jwt.getSubject(), type);
+                        return OAuth2TokenValidatorResult.success();
+                  }
+
+                  log.warn("[AUTH_FLOW][REQ-03][JWT_DECODER] Invalid token type sub={} expected={} actual={}",
+                              jwt.getSubject(), jwtProperties.getAccessTokenType(), type);
+                  OAuth2Error error = new OAuth2Error(
+                              "invalid_token",
+                              "Token type must be " + jwtProperties.getAccessTokenType(),
+                              null);
+                  return OAuth2TokenValidatorResult.failure(error);
+            };
       }
 }

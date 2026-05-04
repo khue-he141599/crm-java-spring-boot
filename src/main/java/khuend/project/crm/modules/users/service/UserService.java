@@ -17,5 +17,7 @@ public interface UserService {
 
    UserResponse findById(UUID id);
 
+   UserResponse getMe(UUID userId);
+
    UserResponse create(CreateUserRequest request);
 }

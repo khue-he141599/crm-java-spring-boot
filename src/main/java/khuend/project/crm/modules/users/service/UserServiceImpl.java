@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import khuend.project.crm.model.entity.UserEntity;
-import khuend.project.crm.model.entity.UserEntity.UserStatus;
 import khuend.project.crm.modules.users.dto.CreateUserRequest;
 import khuend.project.crm.modules.users.dto.SignInResponse;
 import khuend.project.crm.modules.users.dto.SingInRequest;
@@ -21,9 +20,11 @@ import khuend.project.crm.shared.exception.AppException;
 import khuend.project.crm.shared.exception.ErrorCode;
 import khuend.project.crm.shared.security.JwtTokenService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
    private final UserRepository userRepository;
@@ -46,14 +47,25 @@ public class UserServiceImpl implements UserService {
    }
 
    @Override
+   @Transactional(readOnly = true)
+   public UserResponse getMe(UUID userId) {
+      UserEntity entity = userRepository.findById(Objects.requireNonNull(userId))
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+      return UserMapper.toResponse(entity);
+   }
+
+   @Override
    @Transactional
    public UserResponse create(CreateUserRequest request) {
+      log.info("[AUTH_FLOW][AUTH-01][CREATE_USER] Start create user username={} email={}", request.getUsername(), request.getEmail());
 
       userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+         log.warn("[AUTH_FLOW][AUTH-01][CREATE_USER] Email already exists email={}", request.getEmail());
          throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
       });
 
       userRepository.findByPhone(request.getPhone()).ifPresent(user -> {
+         log.warn("[AUTH_FLOW][AUTH-01][CREATE_USER] Phone already exists phone={}", request.getPhone());
          throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
       });
 
@@ -82,28 +94,33 @@ public class UserServiceImpl implements UserService {
       String hashPassword = passwordEncoder.encode(password);
       entity.setPassword(hashPassword);
 
-      return UserMapper.toResponse(userRepository.save(entity));
+      UserEntity savedUser = userRepository.save(entity);
+      log.info("[AUTH_FLOW][AUTH-02][CREATE_USER] Create success userId={} username={}", savedUser.getId(), savedUser.getUsername());
+      return UserMapper.toResponse(savedUser);
    }
 
    @Override
    public SignInResponse signIn(SingInRequest request) {
+      log.info("[AUTH_FLOW][AUTH-01][SIGNIN] Start sign-in username={}", request.getUsername());
       UserEntity entity = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
       boolean isPasswordValid = passwordEncoder.matches(request.getPassword(), entity.getPassword());
 
       if (!isPasswordValid) {
+         log.warn("[AUTH_FLOW][AUTH-01][SIGNIN] Invalid password username={}", request.getUsername());
          throw new AppException(ErrorCode.INVALID_CREDENTIALS);
       }
 
-      UserStatus status = entity.getStatus();
-      if (!UserStatus.ACTIVE.equals(status)) {
-         throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
-      }
+      // UserStatus status = entity.getStatus();
+      // if (!UserStatus.ACTIVE.equals(status)) {
+      //    throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
+      // }
 
       String accessToken = jwtTokenService.generateAccessToken(entity);
       String refreshToken = jwtTokenService.generateRefreshToken(entity);
+      log.info("[AUTH_FLOW][AUTH-02][SIGNIN] Token issued userId={} username={}", entity.getId(), entity.getUsername());
 
-      return new SignInResponse(accessToken, refreshToken, UserMapper.toResponse(entity));
+      return new SignInResponse(accessToken, refreshToken, UserMapper.toResponse(entity), "Bearer");
    }
 }

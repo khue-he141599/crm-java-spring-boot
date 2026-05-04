@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class JwtProperties {
 
    private String secret;
-   private String issuer = "crm-api";
+   private String issuer = "https://crm.local";
    private Integer accessTokenTtlMinutes = 15;
    private Integer refreshTokenTtlDays = 30;
    private String accessTokenType = "access";
