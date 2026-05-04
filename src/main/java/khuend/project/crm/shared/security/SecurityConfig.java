@@ -13,12 +13,12 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
 
       @Bean
-      PasswordEncoder passwordEncoder() {
+      public PasswordEncoder passwordEncoder() {
             return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
       }
 
       @Bean
-      SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+      public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
             return http
                         .csrf(ServerHttpSecurity.CsrfSpec::disable)
                         .authorizeExchange(exchange -> exchange

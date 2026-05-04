@@ -30,37 +30,37 @@ import org.hibernate.annotations.SQLRestriction;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "crm_user_groups", indexes = {
-      @Index(name = "idx_crm_user_groups_code", columnList = "code"),
-      @Index(name = "idx_crm_user_groups_leader_id", columnList = "leaderId")
+            @Index(name = "idx_crm_user_groups_code", columnList = "code"),
+            @Index(name = "idx_crm_user_groups_leader_id", columnList = "leaderId")
 })
 @SQLDelete(sql = "UPDATE crm_user_groups SET deletedAt = now() WHERE id = ?")
 @SQLRestriction("deletedAt IS NULL")
 public class UserGroupEntity extends OwnerBaseEntity {
 
-   @Column(nullable = false)
-   @Builder.Default
-   private boolean is_active = true;
+      @Column(nullable = false)
+      @Builder.Default
+      private boolean is_active = true;
 
-   @Column(name = "business_role_id")
-   private String businessRoleId;
+      @Column(name = "business_role_id")
+      private String businessRoleId;
 
-   @Column
-   private String name;
+      @Column
+      private String name;
 
-   @Column(unique = true)
-   private String code;
+      @Column(unique = true)
+      private String code;
 
-   @Column(name = "leader_id")
-   private String leaderId;
+      @Column(name = "leader_id")
+      private String leaderId;
 
-   @Column(name = "export_team_id")
-   private String exportTeamId;
+      @Column(name = "export_team_id")
+      private String exportTeamId;
 
-   @Transient
-   private Object exportTeam;
+      @Transient
+      private Object exportTeam;
 
-   @Builder.Default
-   @ManyToMany(fetch = FetchType.LAZY)
-   @JoinTable(name = "crm_user_leader_group_relation", joinColumns = @JoinColumn(name = "group_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-   private Set<UserEntity> leaders = new LinkedHashSet<>();
+      @Builder.Default
+      @ManyToMany(fetch = FetchType.LAZY)
+      @JoinTable(name = "crm_user_leader_group_relation", joinColumns = @JoinColumn(name = "group_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+      private Set<UserEntity> leaders = new LinkedHashSet<>();
 }
