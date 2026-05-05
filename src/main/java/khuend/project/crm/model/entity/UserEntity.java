@@ -50,32 +50,32 @@ import org.hibernate.type.SqlTypes;
 @SQLRestriction("deleted_at IS NULL")
 public class UserEntity extends BaseEntity {
 
-   @Column(name = "account_type")
+   @Column(name = "account_type", length = 50)
    private String accountType;
 
-   @Column(name = "employee_no")
+   @Column(name = "employee_no", length = 50)
    private String employeeNo;
 
-   @Column(name = "username", unique = true)
+   @Column(name = "username", unique = true, nullable = false, length = 50)
    private String username;
 
-   @Column(name = "password")
+   @Column(name = "password", nullable = false)
    private String password;
 
-   @Column(name = "name")
+   @Column(name = "name", length = 100)
    private String name;
 
-   @Column(name = "fullname")
+   @Column(name = "fullname", length = 200)
    private String fullname;
 
-   @Column(name = "phone")
+   @Column(name = "phone", length = 15)
    private String phone;
 
    @JdbcTypeCode(SqlTypes.ARRAY)
    @Column(name = "phones", columnDefinition = "text[]")
    private String[] phones;
 
-   @Column(name = "email")
+   @Column(name = "email", nullable = false, length = 255)
    private String email;
 
    @Column(name = "avatar_url")

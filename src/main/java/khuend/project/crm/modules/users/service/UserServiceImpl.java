@@ -12,6 +12,7 @@ import khuend.project.crm.model.entity.UserEntity;
 import khuend.project.crm.modules.users.dto.CreateUserRequest;
 import khuend.project.crm.modules.users.dto.SignInResponse;
 import khuend.project.crm.modules.users.dto.SingInRequest;
+import khuend.project.crm.modules.users.dto.UpdateUserRequest;
 import khuend.project.crm.modules.users.dto.UserResponse;
 import khuend.project.crm.modules.users.mapper.UserMapper;
 import khuend.project.crm.modules.users.repository.DepartmentRepository;
@@ -57,7 +58,8 @@ public class UserServiceImpl implements UserService {
    @Override
    @Transactional
    public UserResponse create(CreateUserRequest request) {
-      log.info("[AUTH_FLOW][AUTH-01][CREATE_USER] Start create user username={} email={}", request.getUsername(), request.getEmail());
+      log.info("[AUTH_FLOW][AUTH-01][CREATE_USER] Start create user username={} email={}", request.getUsername(),
+            request.getEmail());
 
       userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
          log.warn("[AUTH_FLOW][AUTH-01][CREATE_USER] Email already exists email={}", request.getEmail());
@@ -95,7 +97,8 @@ public class UserServiceImpl implements UserService {
       entity.setPassword(hashPassword);
 
       UserEntity savedUser = userRepository.save(entity);
-      log.info("[AUTH_FLOW][AUTH-02][CREATE_USER] Create success userId={} username={}", savedUser.getId(), savedUser.getUsername());
+      log.info("[AUTH_FLOW][AUTH-02][CREATE_USER] Create success userId={} username={}", savedUser.getId(),
+            savedUser.getUsername());
       return UserMapper.toResponse(savedUser);
    }
 
@@ -114,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
       // UserStatus status = entity.getStatus();
       // if (!UserStatus.ACTIVE.equals(status)) {
-      //    throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
+      // throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
       // }
 
       String accessToken = jwtTokenService.generateAccessToken(entity);
@@ -122,5 +125,39 @@ public class UserServiceImpl implements UserService {
       log.info("[AUTH_FLOW][AUTH-02][SIGNIN] Token issued userId={} username={}", entity.getId(), entity.getUsername());
 
       return new SignInResponse(accessToken, refreshToken, UserMapper.toResponse(entity), "Bearer");
+   }
+
+   @Override
+   @Transactional
+   public UserResponse update(UUID id, UpdateUserRequest request) {
+      log.info("[USER][UPDATE] Start update userId={}", id);
+      UserEntity entity = userRepository.findById(Objects.requireNonNull(id))
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+      if (request.getUsername() != null) {
+         entity.setUsername(request.getUsername());
+      }
+      if (request.getName() != null) {
+         entity.setName(request.getName());
+      }
+      if (request.getFullname() != null) {
+         entity.setFullname(request.getFullname());
+      }
+      if (request.getEmail() != null) {
+         entity.setEmail(request.getEmail());
+      }
+      if (request.getPhone() != null) {
+         entity.setPhone(request.getPhone());
+      }
+      if (request.getAccountType() != null) {
+         entity.setAccountType(request.getAccountType());
+      }
+      if (request.getEmployeeNo() != null) {
+         entity.setEmployeeNo(request.getEmployeeNo());
+      }
+
+      UserEntity saved = userRepository.save(entity);
+      log.info("[USER][UPDATE] Update success userId={}", saved.getId());
+      return UserMapper.toResponse(saved);
    }
 }

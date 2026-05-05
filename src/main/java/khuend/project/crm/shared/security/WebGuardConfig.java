@@ -14,6 +14,7 @@ public class WebGuardConfig implements WebMvcConfigurer {
         this.guardInterceptor = guardInterceptor;
     }
 
+    @SuppressWarnings("null")
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(guardInterceptor);

@@ -2,9 +2,11 @@ package khuend.project.crm.modules.users.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import khuend.project.crm.modules.users.dto.CreateUserRequest;
-import khuend.project.crm.modules.users.dto.SingInRequest;
 import khuend.project.crm.modules.users.dto.SignInResponse;
+import khuend.project.crm.modules.users.dto.SingInRequest;
+import khuend.project.crm.modules.users.dto.UpdateUserRequest;
 import khuend.project.crm.modules.users.dto.UserResponse;
 
 public interface UserService {
@@ -20,4 +22,6 @@ public interface UserService {
    UserResponse getMe(UUID userId);
 
    UserResponse create(CreateUserRequest request);
+
+   UserResponse update(UUID id, UpdateUserRequest request);
 }

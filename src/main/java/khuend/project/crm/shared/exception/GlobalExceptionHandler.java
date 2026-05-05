@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,30 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Failed",
                 message,
+                request.getRequestURI());
+
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    // ----------------------------------------------------------------
+    // 400 - ConstraintViolationException (@Validated on @PathVariable /
+    // @RequestParam)
+    // ----------------------------------------------------------------
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (ConstraintViolation<?> cv : ex.getConstraintViolations()) {
+            String field = cv.getPropertyPath().toString();
+            fieldErrors.put(field, cv.getMessage());
+        }
+
+        ErrorResponse body = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Failed",
+                fieldErrors.toString(),
                 request.getRequestURI());
 
         return ResponseEntity.badRequest().body(body);
