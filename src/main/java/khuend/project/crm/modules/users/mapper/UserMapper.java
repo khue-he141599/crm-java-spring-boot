@@ -2,11 +2,13 @@ package khuend.project.crm.modules.users.mapper;
 
 import khuend.project.crm.model.entity.UserEntity;
 import khuend.project.crm.modules.users.dto.UserResponse;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public final class UserMapper {
 
-   private UserMapper() {
-   }
+   // private UserMapper() {
+   // }
 
    public static UserResponse toResponse(UserEntity entity) {
       return new UserResponse(

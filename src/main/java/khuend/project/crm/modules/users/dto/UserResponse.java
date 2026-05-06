@@ -11,8 +11,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor // Add no-args constructor for deserialization
+@AllArgsConstructor // Add all-args constructor for easy instantiation
 public class UserResponse {
 
    private UUID id;
