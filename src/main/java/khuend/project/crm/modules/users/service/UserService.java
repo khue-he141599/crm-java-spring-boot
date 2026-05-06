@@ -9,7 +9,7 @@ import khuend.project.crm.modules.users.dto.SingInRequest;
 import khuend.project.crm.modules.users.dto.UpdateUserRequest;
 import khuend.project.crm.modules.users.dto.UserResponse;
 
-public interface UserService {
+public interface UserService { // Define the service interface for user-related operations
 
    SignInResponse signIn(SingInRequest request);
 

@@ -23,9 +23,9 @@ import khuend.project.crm.shared.security.JwtTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
+@Service // Mark this class as a Spring service component
+@RequiredArgsConstructor // Generate constructor with required arguments (final fields)
+@Slf4j // Add logging support
 public class UserServiceImpl implements UserService {
 
    private final UserRepository userRepository;

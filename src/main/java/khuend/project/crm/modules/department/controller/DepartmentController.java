@@ -14,6 +14,9 @@ import khuend.project.crm.shared.security.AuthType;
 import khuend.project.crm.shared.security.Guard;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Exposes HTTP endpoints for department-related operations.
+ */
 @Tag(name = "Department", description = "Department management APIs")
 @RestController
 @RequestMapping("/api/departments")
